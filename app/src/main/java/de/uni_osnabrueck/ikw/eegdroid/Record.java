@@ -728,6 +728,7 @@ public class Record extends AppCompatActivity {
 
         //Remove left over temporary files
         deleteTempFiles();
+
     }
 
     private void prepareLslStream() {
@@ -971,6 +972,8 @@ public class Record extends AppCompatActivity {
             notifying = true;
             mTraumService.warmUp();
             mDataResolution.setText("warming up");
+            useGainInConversion = getSharedPreferences("userPreferences", MODE_PRIVATE)
+                    .getBoolean("useGainInConversion", false);
             mBluetoothLeService.setCharacteristicNotification(mNotifyCharacteristic, true);
             menuItemNotify.setIcon(R.drawable.ic_notifications_active_blue_24dp);
             //Prevent Screen from turning off
@@ -1459,11 +1462,20 @@ public class Record extends AppCompatActivity {
 
     /* This is the last processing step before the data is displayed and saved
      Note that gain is 1 by default */
+    private boolean useGainInConversion;
     private List<Float> convertToMicroV(int[] data) {
         // Conversion formula (new): V_in = X * (298 / (1000 * gain))
         List<Float> dataMicroV = new ArrayList<>();
-        for (float datapoint : data)
-            dataMicroV.add(datapoint * 5 / 4 * 298 / (1000 * selectedGain));
+
+        if (useGainInConversion) {
+            Log.d(TAG, "Using Old Conversion");
+            for (float datapoint : data)
+                dataMicroV.add(datapoint * 5 / 4 * 298 / (1000 * selectedGain));
+        } else {
+            Log.d(TAG, "Using Simple Conversion");
+            for (float datapoint : data)
+                dataMicroV.add(datapoint * 298/1000);
+        }
         return dataMicroV;
     }
 

@@ -25,6 +25,7 @@ public class Settings extends AppCompatActivity {
     private SwitchCompat switch_inAppFilter;
     private SwitchCompat switch_eegLabels;
     private SwitchCompat switch_showStats;
+    private SwitchCompat switch_useGainInConversion;
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -45,6 +46,7 @@ public class Settings extends AppCompatActivity {
         boolean inAppFilterEnabled = sharedPreferences.getBoolean("inAppFilter", true);
         boolean eegLabelsEnabled = sharedPreferences.getBoolean("eegLabels", true);
         boolean showStatsEnabled = sharedPreferences.getBoolean("showStats", false);
+        boolean useGainInConversion = sharedPreferences.getBoolean("useGainInConversion", false);
 
         editText_saveDir = findViewById(R.id.editText_saveDir);
         editText_username = findViewById(R.id.editText_username);
@@ -54,6 +56,7 @@ public class Settings extends AppCompatActivity {
         switch_inAppFilter = findViewById(R.id.switch_inAppFilter);
         switch_eegLabels = findViewById(R.id.switch_eegLabels);
         switch_showStats = findViewById(R.id.switch_showStats);
+        switch_useGainInConversion = findViewById(R.id.switch_useGainInConversion);
         Button applyChangesButton = findViewById(R.id.settings_apply_changes);
         Runnable updateUI = new Runnable() {
             @Override
@@ -66,6 +69,7 @@ public class Settings extends AppCompatActivity {
                 switch_inAppFilter.setChecked(inAppFilterEnabled);
                 switch_eegLabels.setChecked(eegLabelsEnabled);
                 switch_showStats.setChecked(showStatsEnabled);
+                switch_useGainInConversion.setChecked(useGainInConversion);
             }
         };
         runOnUiThread(updateUI);
@@ -86,7 +90,9 @@ public class Settings extends AppCompatActivity {
             editor.putBoolean("eegLabels", switch_eegLabels.isChecked());
             sharedPreferences.edit().putBoolean("eegLabels", switch_eegLabels.isChecked()).commit();
             editor.putBoolean("showStats", switch_showStats.isChecked());
-            sharedPreferences.edit().putBoolean("showStats", switch_eegLabels.isChecked()).commit();
+            sharedPreferences.edit().putBoolean("showStats", switch_showStats.isChecked()).commit();
+            editor.apply();
+            sharedPreferences.edit().putBoolean("useGainInConversion", switch_useGainInConversion.isChecked()).commit();
             editor.apply();
 
             //Notifies the user
