@@ -257,7 +257,7 @@ public class ManageSessions extends AppCompatActivity {
 
     //Returns a list of recordings in directory
     public void readDirectory(File dir) {
-        arrayListOfFiles = new ArrayList<>(Arrays.asList(Objects.requireNonNull(dir.listFiles())));
+        arrayListOfFiles = new ArrayList<>(Arrays.asList(Objects.requireNonNull(dir.listFiles((d, name) -> name.toLowerCase().endsWith(".csv") || name.toLowerCase().endsWith(".xdf") ))));
         Collections.sort(arrayListOfFiles, Collections.reverseOrder());
         //Add if here?
     }
