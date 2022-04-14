@@ -25,6 +25,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Objects;
 
 import us.feras.mdv.BuildConfig;
@@ -59,9 +60,11 @@ public class MainActivity extends AppCompatActivity
         // TODO: Use new scoped storage api to make the folder accessible through laptop
 
         // File object to save the directory to save the EEG recordings
-        dirSessions = new File(Objects.requireNonNull(this.getFilesDir()).getAbsolutePath() + saveDir);
+//        dirSessions = new File(Objects.requireNonNull(this.getFilesDir()).getAbsolutePath() + saveDir);
+        dirSessions = new File(String.valueOf(Environment.getExternalStorageDirectory().toPath().resolve("Download")));
         ManageSessions.createDirectory(dirSessions);
-        Uri dirUri = Uri.parse(Environment.getExternalStorageDirectory() + saveDir + "/"); //Uri to open the folder with sessions
+//        Uri dirUri = Uri.parse(Environment.getExternalStorageDirectory() + saveDir + "/"); //Uri to open the folder with sessions
+        Uri dirUri = Uri.parse(String.valueOf(Environment.getExternalStorageDirectory().toPath().resolve("Download")));
         Log.d("Main Directory", dirUri.getPath());
 
         //Sets the lateral Menu
