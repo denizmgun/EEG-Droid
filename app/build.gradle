@@ -59,7 +59,7 @@ android {
         applicationId 'de.uos.ikw.eegdroid'
         minSdkVersion 26
         versionCode 1
-        versionName 'beta-2.6.8'
+        versionName '2.7.0'
         vectorDrawables.useSupportLibrary = true
         setProperty('archivesBaseName', "EEGDroid-$versionName")
         ndk {
@@ -67,14 +67,14 @@ android {
             // libraries Gradle should build and package with your app.
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
-//        externalNativeBuild.cmake {
-//            arguments "-DANDROID_CPP_FEATURES=rtti exceptions", "-DLSL_NO_FANCY_LIBNAME=1", "-DANDROID_PLATFORM=24"
-//            targets "lsl"
-//        }
+        externalNativeBuild.cmake {
+            arguments "-DANDROID_CPP_FEATURES=rtti exceptions", "-DLSL_NO_FANCY_LIBNAME=1", "-DANDROID_PLATFORM=24"
+            targets "lsl"
+        }
     }
-//    externalNativeBuild.cmake {
-//        path "./liblsl/CMakeLists.txt"
-//    }
+    externalNativeBuild.cmake {
+        path "./liblsl/CMakeLists.txt"
+    }
     buildTypes {
         debug {
             debuggable true
