@@ -57,9 +57,9 @@ android {
     compileSdkVersion 31
     defaultConfig {
         applicationId 'de.uos.ikw.eegdroid'
-        minSdkVersion 24
+        minSdkVersion 26
         versionCode 1
-        versionName 'beta-2.6.8'
+        versionName '2.7.0'
         vectorDrawables.useSupportLibrary = true
         setProperty('archivesBaseName', "EEGDroid-$versionName")
         ndk {
@@ -67,14 +67,14 @@ android {
             // libraries Gradle should build and package with your app.
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
-//        externalNativeBuild.cmake {
-//            arguments "-DANDROID_CPP_FEATURES=rtti exceptions", "-DLSL_NO_FANCY_LIBNAME=1", "-DANDROID_PLATFORM=24"
-//            targets "lsl"
-//        }
+        externalNativeBuild.cmake {
+            arguments "-DANDROID_CPP_FEATURES=rtti exceptions", "-DLSL_NO_FANCY_LIBNAME=1", "-DANDROID_PLATFORM=24"
+            targets "lsl"
+        }
     }
-//    externalNativeBuild.cmake {
-//        path "./liblsl/CMakeLists.txt"
-//    }
+    externalNativeBuild.cmake {
+        path "./liblsl/CMakeLists.txt"
+    }
     buildTypes {
         debug {
             debuggable true
@@ -113,7 +113,7 @@ android {
         }
     }
     buildToolsVersion '32.0.0'
-    ndkVersion '21.4.7075529'
+    ndkVersion '23.1.7779620'
 }
 
 dependencies {
@@ -129,9 +129,9 @@ dependencies {
     implementation 'androidx.vectordrawable:vectordrawable:1.2.0-alpha02'
     implementation 'com.atlassian.commonmark:commonmark:0.17.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
-    implementation 'com.google.android.material:material:1.6.0-alpha02'
-    implementation 'com.opencsv:opencsv:5.5.2'
-    implementation 'net.java.dev.jna:jna:5.10.0@aar'
+    implementation 'com.google.android.material:material:1.6.0-beta01'
+    implementation 'com.opencsv:opencsv:5.6'
+    implementation 'net.java.dev.jna:jna:5.11.0@aar'
     implementation 'org.apache.commons:commons-math3:3.6.1'
     implementation 'org.bytedeco.javacpp-presets:fftw-platform:3.3.8-1.4.4'
     implementation 'ru.noties.markwon:core:3.1.0'

@@ -17,14 +17,6 @@ Downloads:
 - [Download the app](https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/EEGDroid.apk) 
 - [Download the complete report]
 
-## Screenshots
 
-<img src="https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/docs/images/architecture.png" height="500">
-<img src="https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/docs/images/main_menu.png" height="500">
-<img src="https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/docs/images/record_recording.png" height="500">
-<img src="https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/docs/images/manage_share.png" height="500">
-<img src="https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/docs/images/epibot_content.png" height="500">
-<img src="https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/docs/images/learn_more.png" height="500">
-<img src="https://raw.githubusercontent.com/adrocampos/EEG-Droid/master/docs/images/settings_content.png" height="500">
 
 *A project of the [Neuroinformatics Research Group](https://www.ikw.uni-osnabrueck.de/en/research_groups/neuroinformatics/overview.html) of the [Institute of Cognitive Science](https://www.ikw.uni-osnabrueck.de/en/home.html) at the [University of Osnabrück](https://www.uni-osnabrueck.de/en/home.html).*
