@@ -28,9 +28,12 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,6 +80,16 @@ public class BluetoothLeService extends Service {
                 broadcastUpdate(intentAction);
                 Log.i(TAG, "Connected to GATT server.");
                 // Attempts to discover services after successful connection.
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
                 Log.i(TAG, "Attempting to start service discovery:" +
                         mBluetoothGatt.discoverServices());
 
@@ -93,13 +106,23 @@ public class BluetoothLeService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
                 mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
             } else Log.w(TAG, "onServicesDiscovered received: " + status);
 
         }
 
         @Override
-        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status){
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             Log.d(TAG, "New MTU Size: " + mtu);
             Log.d(TAG, "MTU Request Success: " + status);
             isBusy = false;
@@ -151,9 +174,9 @@ public class BluetoothLeService extends Service {
         final byte[] data = characteristic.getValue();
         if (data != null && data.length > 0) {
             dataDecoded = TraumschreiberService.decode(data, characteristic.getUuid());
-            if(dataDecoded != null) intent.putExtra(EXTRA_DATA, dataDecoded);
+            if (dataDecoded != null) intent.putExtra(EXTRA_DATA, dataDecoded);
         }
-        if(dataDecoded != null) sendBroadcast(intent);
+        if (dataDecoded != null) sendBroadcast(intent);
     }
 
     @Override
@@ -212,6 +235,16 @@ public class BluetoothLeService extends Service {
         // Previously connected device.  Try to reconnect.
         if (mBluetoothGatt != null && address.equals(mBluetoothDeviceAddress)) {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return true;
+            }
             if (mBluetoothGatt.connect()) {
                 mConnectionState = STATE_CONNECTING;
                 return true;
@@ -243,6 +276,16 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mBluetoothGatt.disconnect();
     }
 
@@ -252,6 +295,16 @@ public class BluetoothLeService extends Service {
      */
     private void close() {
         if (mBluetoothGatt == null) return;
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mBluetoothGatt.close();
         mBluetoothGatt = null;
     }
@@ -269,6 +322,16 @@ public class BluetoothLeService extends Service {
             return;
         }
         newTraumschreiber = newModel;
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mBluetoothGatt.readCharacteristic(characteristic);
     }
 
@@ -286,6 +349,16 @@ public class BluetoothLeService extends Service {
         }
 
         // Set Notification
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         boolean result = mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
         Log.d(TAG, "set Notification of Characteristic " + characteristic.getUuid().toString() +
                 " success: " + String.format("%b", result));
@@ -300,12 +373,12 @@ public class BluetoothLeService extends Service {
             int properties = characteristic.getProperties();
             boolean indicate = (properties & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0;
             // if(indicate) Log.d(TAG, "WATCH OUT, PROPERTY TREATED AS INDICATE, OK?");
-            if (!enabled)      descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+            if (!enabled) descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
             else if (indicate) descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
-            else               descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            else descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             result = mBluetoothGatt.writeDescriptor(descriptor);
             Log.d(TAG, "writeDescriptor" +
-                    characteristic.getUuid().toString() + " Succes: " + String.format("%b",result));
+                    characteristic.getUuid().toString() + " Succes: " + String.format("%b", result));
         }
     }
 
@@ -321,10 +394,20 @@ public class BluetoothLeService extends Service {
         }
         isBusy = true;
         Log.w(TAG, characteristic.toString());
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mBluetoothGatt.writeCharacteristic(characteristic);
     }
 
-    public BluetoothGattService getService(UUID uuid){
+    public BluetoothGattService getService(UUID uuid) {
         return (mBluetoothGatt.getService(uuid));
     }
 
@@ -346,14 +429,24 @@ public class BluetoothLeService extends Service {
         }
     }
 
-    public void setNewTraumschreiber(boolean newDevice){
+    public void setNewTraumschreiber(boolean newDevice) {
         Log.d(TAG, "Set newTraumschreiber called");
         newTraumschreiber = newDevice;
     }
 
-    public void requestMtu(int mtu){
+    public void requestMtu(int mtu) {
         isBusy = true;
         // Request new MTU
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mBluetoothGatt.requestMtu(mtu);
         Log.i(TAG, "Requesting Mtu of size" + mtu);
     }

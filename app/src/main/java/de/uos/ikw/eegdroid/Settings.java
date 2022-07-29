@@ -55,18 +55,15 @@ public class Settings extends AppCompatActivity {
         switch_eegLabels = findViewById(R.id.switch_eegLabels);
         switch_showStats = findViewById(R.id.switch_showStats);
         Button applyChangesButton = findViewById(R.id.settings_apply_changes);
-        Runnable updateUI = new Runnable() {
-            @Override
-            public void run() {
-                editText_saveDir.setText(saveDir);
-                editText_username.setText(username);
-                editText_userID.setText(userID);
-                editText_IP.setText(IP);
-                editText_port.setText(port);
-                switch_inAppFilter.setChecked(inAppFilterEnabled);
-                switch_eegLabels.setChecked(eegLabelsEnabled);
-                switch_showStats.setChecked(showStatsEnabled);
-            }
+        Runnable updateUI = () -> {
+            editText_saveDir.setText(saveDir);
+            editText_username.setText(username);
+            editText_userID.setText(userID);
+            editText_IP.setText(IP);
+            editText_port.setText(port);
+            switch_inAppFilter.setChecked(inAppFilterEnabled);
+            switch_eegLabels.setChecked(eegLabelsEnabled);
+            switch_showStats.setChecked(showStatsEnabled);
         };
         runOnUiThread(updateUI);
 
@@ -82,11 +79,11 @@ public class Settings extends AppCompatActivity {
             editor.putString("IP", editText_IP.getText().toString());
             editor.putString("port", editText_port.getText().toString());
             editor.putBoolean("inAppFilter", switch_inAppFilter.isChecked());
-            sharedPreferences.edit().putBoolean("inAppFilter", switch_inAppFilter.isChecked()).commit();
+            sharedPreferences.edit().putBoolean("inAppFilter", switch_inAppFilter.isChecked()).apply();
             editor.putBoolean("eegLabels", switch_eegLabels.isChecked());
-            sharedPreferences.edit().putBoolean("eegLabels", switch_eegLabels.isChecked()).commit();
+            sharedPreferences.edit().putBoolean("eegLabels", switch_eegLabels.isChecked()).apply();
             editor.putBoolean("showStats", switch_showStats.isChecked());
-            sharedPreferences.edit().putBoolean("showStats", switch_eegLabels.isChecked()).commit();
+            sharedPreferences.edit().putBoolean("showStats", switch_eegLabels.isChecked()).apply();
             editor.apply();
 
             //Notifies the user

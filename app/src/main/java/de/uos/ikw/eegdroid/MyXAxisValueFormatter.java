@@ -5,7 +5,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import java.text.DecimalFormat;
 
 public class MyXAxisValueFormatter extends ValueFormatter {
-    private DecimalFormat mFormat;
+    private final DecimalFormat mFormat;
 
     public MyXAxisValueFormatter() {
         // format values to 1 decimal digit

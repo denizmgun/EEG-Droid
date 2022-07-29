@@ -25,7 +25,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Objects;
 
 import us.feras.mdv.BuildConfig;

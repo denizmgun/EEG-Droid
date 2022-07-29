@@ -33,7 +33,6 @@ public class ManageSessions extends AppCompatActivity {
     private SessionAdapter adapter;
     private String saveDir;
     private ArrayList<File> arrayListOfFiles;
-    private ShareActionProvider shareActionProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +65,7 @@ public class ManageSessions extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_manage, menu);
         MenuItem item = menu.findItem(R.id.send_session);
         MenuItem launchFileManager = menu.findItem(R.id.launch_file_manager);
-        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
+        ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
         MenuItem openFile = menu.findItem(R.id.open_with_app);
         return true;
     }
@@ -77,14 +76,14 @@ public class ManageSessions extends AppCompatActivity {
         // Handle item selection
         boolean[] positions = adapter.getSelectedPositions();
         ArrayList<Integer> selectedPositions = new ArrayList<Integer>();
-        for (int i = 0; i<positions.length ;i++){
+        for (int i = 0; i < positions.length; i++) {
             if (positions[i]) selectedPositions.add(i);
         }
 
         //Handles if no session has been selected
         if (selectedPositions.size() == 0) {
 
-            if (item.getItemId() == R.id.launch_file_manager){
+            if (item.getItemId() == R.id.launch_file_manager) {
                 launchFileManager();
                 return true;
             }
@@ -123,13 +122,13 @@ public class ManageSessions extends AppCompatActivity {
         }
     }
 
-    private void sendSessions(ArrayList<Integer> selectedPositions){
+    private void sendSessions(ArrayList<Integer> selectedPositions) {
         Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
         intent.putExtra(Intent.EXTRA_SUBJECT, "EEG Sessions");
         intent.setType("text/csv");
 
         ArrayList<Uri> files = new ArrayList<Uri>();
-        for(int position : selectedPositions){
+        for (int position : selectedPositions) {
             Uri uri = FileProvider.getUriForFile(
                     this,
                     "de.uos.ikw.eegdroid.provider",
@@ -141,7 +140,7 @@ public class ManageSessions extends AppCompatActivity {
         adapter.resetSelectedPos();
     }
 
-    private void renameSessions(ArrayList<Integer> selectedPositions){
+    private void renameSessions(ArrayList<Integer> selectedPositions) {
         LayoutInflater layoutInflaterAndroid = LayoutInflater.from(this);
         View mView = layoutInflaterAndroid.inflate(R.layout.input_dialog_string, null);
         AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(this);
@@ -154,10 +153,10 @@ public class ManageSessions extends AppCompatActivity {
                 .setMessage(getResources().getString(R.string.ask_new_name) + " " + "selection" + ":")
                 .setPositiveButton(R.string.rename, (dialogBox, id) -> {
                     int renameCount = 0;
-                    for (int i = selectedPositions.size()-1; i > -1 ; i--) {
+                    for (int i = selectedPositions.size() - 1; i > -1; i--) {
                         int position = selectedPositions.get(i);
                         String oldName = arrayListOfFiles.get(position).getName().substring(0, 15);
-                        String numbering = (renameCount==0) ? "" : "_"+Integer.toString(renameCount);
+                        String numbering = (renameCount == 0) ? "" : "_" + renameCount;
                         File newName = new File(saveDir, oldName +
                                 userInputDialogEditText.getText().toString() +
                                 numbering + ".csv");
@@ -170,7 +169,7 @@ public class ManageSessions extends AppCompatActivity {
                         } else {
                             arrayListOfFiles.get(position).renameTo(newName);
                             arrayListOfFiles.set(position, newName);
-                            Collections.sort(arrayListOfFiles, Collections.reverseOrder());
+                            arrayListOfFiles.sort(Collections.reverseOrder());
                             //adapter.notifyItemChanged(position);
                             adapter.notifyDataSetChanged();
                             adapter.resetSelectedPos();
@@ -187,14 +186,14 @@ public class ManageSessions extends AppCompatActivity {
         alertDialogAndroid.show();
     }
 
-    private void deleteSessions(ArrayList<Integer> selectedPositions){
+    private void deleteSessions(ArrayList<Integer> selectedPositions) {
         //Handles the Dialog to confirm the file delete
         AlertDialog.Builder alert = new AlertDialog.Builder(this)
                 .setTitle(R.string.dialog_title)
                 .setMessage(getResources().getString(R.string.confirmation_delete) + " " + "selection" + "?");
         alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
 
-            for(int position:selectedPositions) {
+            for (int position : selectedPositions) {
                 arrayListOfFiles.get(position).delete();
                 arrayListOfFiles.remove(position);
                 adapter.notifyItemRemoved(position);
@@ -210,24 +209,21 @@ public class ManageSessions extends AppCompatActivity {
         adapter.resetSelectedPos();
     }
 
-    private void launchFileManager(){
+    private void launchFileManager() {
         // Construct an intent for opening a folder
         Uri selectedUri = Uri.parse(MainActivity.getDirSessions().toString());
         Log.d("ManageSessions: ", MainActivity.getDirSessions().toString());
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setDataAndType(selectedUri, "resource/folder");
 
-        if (intent.resolveActivityInfo(getPackageManager(), 0) != null)
-        {
+        if (intent.resolveActivityInfo(getPackageManager(), 0) != null) {
             startActivity(intent);
-        }
-        else
-        {
+        } else {
             Toast.makeText(getApplicationContext(), "No file explorer installed", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void openWithApp(ArrayList<Integer> selectedPositions){
+    private void openWithApp(ArrayList<Integer> selectedPositions) {
         if (selectedPositions.size() != 1) {
             Toast.makeText(getApplicationContext(), "Can only open one file", Toast.LENGTH_SHORT).show();
             return;
@@ -257,8 +253,8 @@ public class ManageSessions extends AppCompatActivity {
 
     //Returns a list of recordings in directory
     public void readDirectory(File dir) {
-        arrayListOfFiles = new ArrayList<>(Arrays.asList(Objects.requireNonNull(dir.listFiles((d, name) -> name.toLowerCase().endsWith(".csv") || name.toLowerCase().endsWith(".xdf") ))));
-        Collections.sort(arrayListOfFiles, Collections.reverseOrder());
+        arrayListOfFiles = new ArrayList<>(Arrays.asList(Objects.requireNonNull(dir.listFiles((d, name) -> name.toLowerCase().endsWith(".csv") || name.toLowerCase().endsWith(".xdf")))));
+        arrayListOfFiles.sort(Collections.reverseOrder());
         //Add if here?
     }
 
