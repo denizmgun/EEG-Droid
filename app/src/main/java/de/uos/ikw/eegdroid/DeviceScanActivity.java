@@ -54,6 +54,8 @@ public class DeviceScanActivity extends ListActivity {
     private static final int REQUEST_ACCESS_BACKGROUND_LOCATION = 1;
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_BLUETOOTH_SCAN = 1;
+    private static final int REQUEST_BLUETOOTH_CONNECT = 1;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 6000;
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -63,6 +65,16 @@ public class DeviceScanActivity extends ListActivity {
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
                     Log.i("gattCallback", "STATE_CONNECTED");
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
                     gatt.discoverServices();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
@@ -78,6 +90,16 @@ public class DeviceScanActivity extends ListActivity {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             List<BluetoothGattService> services = gatt.getServices();
             Log.i("onServicesDiscovered", services.toString());
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             gatt.readCharacteristic(services.get(0).getCharacteristics().get(0));
         }
 
@@ -86,6 +108,16 @@ public class DeviceScanActivity extends ListActivity {
                                          BluetoothGattCharacteristic
                                                  characteristic, int status) {
             Log.i("onCharacteristicRead", characteristic.toString());
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             gatt.disconnect();
         }
     };
@@ -188,8 +220,6 @@ public class DeviceScanActivity extends ListActivity {
         Log.d(TAG, "Bluetooth Checked");
         checkPermissions();
         Log.d(TAG, "Permissions Checked");
-        checkBuildVersion();
-        Log.d(TAG, "BuildVersion Checked");
         checkLocationEnabled();
         Log.d(TAG, "Location Services Checked");
 
@@ -201,6 +231,16 @@ public class DeviceScanActivity extends ListActivity {
         // fire an intent to display a dialog asking the user to grant permission to enable it.
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 
         } else {
@@ -227,7 +267,7 @@ public class DeviceScanActivity extends ListActivity {
         LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         boolean gpsEnabled = false;
         boolean networkEnabled = false;
-        boolean locationEnabled = false;
+        boolean locationEnabled;
 
         try {
             gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -265,6 +305,28 @@ public class DeviceScanActivity extends ListActivity {
     }
 
     private void checkPermissions() {
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
+                Manifest.permission.BLUETOOTH_SCAN)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
+                    Manifest.permission.BLUETOOTH_SCAN)) {
+            } else {
+                ActivityCompat.requestPermissions(DeviceScanActivity.this,
+                        new String[]{Manifest.permission.BLUETOOTH_SCAN},
+                        REQUEST_BLUETOOTH_SCAN);
+            }
+        }
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
+                Manifest.permission.BLUETOOTH_CONNECT)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
+                    Manifest.permission.BLUETOOTH_CONNECT)) {
+            } else {
+                ActivityCompat.requestPermissions(DeviceScanActivity.this,
+                        new String[]{Manifest.permission.BLUETOOTH_CONNECT},
+                        REQUEST_BLUETOOTH_CONNECT);
+            }
+        }
         if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -310,9 +372,7 @@ public class DeviceScanActivity extends ListActivity {
                         REQUEST_READ_EXTERNAL_STORAGE);
             }
         }
-    }
 
-    private void checkBuildVersion() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
                     Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -350,6 +410,16 @@ public class DeviceScanActivity extends ListActivity {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
         Intent intent = new Intent();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         intent.putExtra(Record.EXTRAS_DEVICE_NAME, device.getName());
         intent.putExtra(Record.EXTRAS_DEVICE_ADDRESS, device.getAddress());
         setResult(RESULT_OK, intent);
@@ -363,6 +433,16 @@ public class DeviceScanActivity extends ListActivity {
     private void scanLeDevice(final boolean enable) {
         if (!mBluetoothAdapter.isEnabled()) return;
         if (enable) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             mLEScanner.startScan(filters, settings, mScanCallback);
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(() -> {
@@ -394,6 +474,16 @@ public class DeviceScanActivity extends ListActivity {
         }
 
         public void addDevice(BluetoothDevice device) {
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             if (device.getName() != null && TraumschreiberService.isTraumschreiberDevice(device.getName())) {
                 Log.d(TAG, "addDevice: Found a Traumschreiber with ID " + device.getAddress());
 
@@ -441,6 +531,16 @@ public class DeviceScanActivity extends ListActivity {
             } else viewHolder = (ViewHolder) view.getTag();
 
             BluetoothDevice device = mLeDevices.get(i);
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return view;
+            }
             final String deviceName = device.getName();
             if (deviceName != null && deviceName.length() > 0)
                 viewHolder.deviceName.setText(deviceName);
