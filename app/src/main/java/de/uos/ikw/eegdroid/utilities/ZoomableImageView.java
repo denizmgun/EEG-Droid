@@ -7,9 +7,8 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.widget.ImageView;
 
-public class ZoomableImageView extends ImageView {
+public class ZoomableImageView extends androidx.appcompat.widget.AppCompatImageView {
     static final int NONE = 0;
     static final int DRAG = 1;
     static final int ZOOM = 2;

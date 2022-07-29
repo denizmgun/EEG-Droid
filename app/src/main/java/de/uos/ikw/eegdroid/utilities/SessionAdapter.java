@@ -25,14 +25,14 @@ import de.uos.ikw.eegdroid.R;
 
 public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetViewHolder> {
 
+    private final boolean[] isSelectedPosition;
     ArrayList<File> arrayListFiles;
     private int selectedPos = RecyclerView.NO_POSITION;
-    private boolean[] isSelectedPosition;
 
-    public SessionAdapter(ArrayList<File> arrayListFiles, Context context) {
+    public SessionAdapter(ArrayList<File> arrayListFiles, Context applicationContext) {
         this.arrayListFiles = arrayListFiles;
         int nItems = arrayListFiles.size();
-        isSelectedPosition = new boolean[nItems]; 
+        isSelectedPosition = new boolean[nItems];
     }
 
     @NonNull
@@ -73,7 +73,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
             //notifyItemChanged(selectedPos);
             //selectedPos = position;
             //notifyItemChanged(selectedPos);
-            isSelectedPosition[position] = isSelected ? false : true;
+            isSelectedPosition[position] = !isSelected;
             notifyItemChanged(position);
         });
 
@@ -88,7 +88,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.PlanetVi
         return selectedPos;
     }
 
-    public boolean[] getSelectedPositions(){
+    public boolean[] getSelectedPositions() {
         return isSelectedPosition;
     }
 

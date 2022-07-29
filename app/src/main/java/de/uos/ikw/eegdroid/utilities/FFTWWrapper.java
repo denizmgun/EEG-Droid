@@ -1,16 +1,17 @@
 package de.uos.ikw.eegdroid.utilities;
 
+import static org.bytedeco.fftw.global.fftw3.FFTW_ESTIMATE;
+import static org.bytedeco.fftw.global.fftw3.FFTW_FORWARD;
+import static org.bytedeco.fftw.global.fftw3.fftw_destroy_plan;
+import static org.bytedeco.fftw.global.fftw3.fftw_execute;
+import static org.bytedeco.fftw.global.fftw3.fftw_plan;
+import static org.bytedeco.fftw.global.fftw3.fftw_plan_dft_1d;
+
 import org.apache.commons.math3.complex.Complex;
+import org.bytedeco.fftw.global.fftw3;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.fftw3;
 
-import static org.bytedeco.javacpp.fftw3.FFTW_ESTIMATE;
-import static org.bytedeco.javacpp.fftw3.FFTW_FORWARD;
-import static org.bytedeco.javacpp.fftw3.fftw_destroy_plan;
-import static org.bytedeco.javacpp.fftw3.fftw_execute;
-import static org.bytedeco.javacpp.fftw3.fftw_plan;
-import static org.bytedeco.javacpp.fftw3.fftw_plan_dft_1d;
 
 public class FFTWWrapper {
     private static final int REAL = 0;
@@ -28,8 +29,8 @@ public class FFTWWrapper {
             NUM_POINTS = n;
         }
 
-        DoublePointer signal = new DoublePointer(2 * NUM_POINTS);
-        DoublePointer result = new DoublePointer(2 * NUM_POINTS);
+        DoublePointer signal = new DoublePointer(2L * NUM_POINTS);
+        DoublePointer result = new DoublePointer(2L * NUM_POINTS);
 
         fftw_plan plan = fftw_plan_dft_1d(NUM_POINTS, signal, result,
                 FFTW_FORWARD, (int) FFTW_ESTIMATE);
