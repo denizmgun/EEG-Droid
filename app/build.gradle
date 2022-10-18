@@ -43,15 +43,15 @@ android {
     signingConfigs {
         debug {
             storeFile file('key.jks')
-            storePassword keystoreProperties['storePassword']
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
+            storePassword keystoreProperties["storePassword"]
+            keyAlias keystoreProperties["keyAlias"]
+            keyPassword keystoreProperties["keyPassword"]
         }
         release {
             storeFile file('key.jks')
-            storePassword keystoreProperties['storePassword']
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
+            storePassword keystoreProperties["storePassword"]
+            keyAlias keystoreProperties["keyAlias"]
+            keyPassword keystoreProperties["keyPassword"]
         }
     }
     compileSdkVersion 32
@@ -59,7 +59,7 @@ android {
         applicationId 'de.uos.ikw.eegdroid'
         minSdkVersion 26
         versionCode 1
-        versionName '2.8.4'
+        versionName '2.8.5'
         vectorDrawables.useSupportLibrary = true
         setProperty('archivesBaseName', "EEGDroid-$versionName")
         ndk {
@@ -71,6 +71,7 @@ android {
             arguments "-DANDROID_CPP_FEATURES=rtti exceptions", "-DLSL_NO_FANCY_LIBNAME=1", "-DANDROID_PLATFORM=24"
             targets "lsl"
         }
+        targetSdk 32
     }
     externalNativeBuild.cmake {
         path "./liblsl/CMakeLists.txt"
@@ -113,7 +114,7 @@ android {
         }
     }
     buildToolsVersion '33.0.0'
-    ndkVersion '25.0.8775105'
+    ndkVersion '25.1.8937393'
     namespace 'de.uos.ikw.eegdroid'
 }
 
