@@ -44,21 +44,17 @@ import java.util.UUID;
  * given Bluetooth LE device.
  */
 public class BluetoothLeService extends Service {
-    public final static String ACTION_GATT_CONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE =
-            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA =
-            "com.example.bluetooth.le.EXTRA_DATA";
+    public final static String ACTION_GATT_CONNECTED = "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED = "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_DATA_AVAILABLE = "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_DATA = "com.example.bluetooth.le.EXTRA_DATA";
     private final static String TAG = BluetoothLeService.class.getSimpleName();
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
     private final IBinder mBinder = new LocalBinder();
+    public boolean isBusy = false;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
@@ -66,8 +62,6 @@ public class BluetoothLeService extends Service {
     private int mConnectionState = STATE_DISCONNECTED;
     //private TraumschreiberService mTraumschreiberService = new TraumschreiberService();
     private int[] dataDecoded;
-    private boolean newTraumschreiber = false;
-    public boolean isBusy = false;
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -90,8 +84,7 @@ public class BluetoothLeService extends Service {
                     // for ActivityCompat#requestPermissions for more details.
                     return;
                 }
-                Log.i(TAG, "Attempting to start service discovery:" +
-                        mBluetoothGatt.discoverServices());
+                Log.i(TAG, "Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED && (status == BluetoothGatt.GATT_SUCCESS)) {
                 gatt.close();
@@ -129,9 +122,7 @@ public class BluetoothLeService extends Service {
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt,
-                                         BluetoothGattCharacteristic characteristic,
-                                         int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
@@ -139,28 +130,24 @@ public class BluetoothLeService extends Service {
         }
 
         @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt,
-                                            BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
 
         @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt,
-                                          BluetoothGattCharacteristic characteristic,
-                                          int status) {
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.d(TAG, "------------- onCharacteristicWrite status: " + status);
             Log.d(TAG, "New Value of Config: " + Arrays.toString(characteristic.getValue()));
             isBusy = false;
         }
 
         @Override
-        public void onDescriptorWrite(BluetoothGatt gatt,
-                                      BluetoothGattDescriptor descriptor,
-                                      int status) {
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             isBusy = false;
             Log.d(TAG, "------------- onDescriptorWrite status: " + status);
         }
     };
+    private boolean newTraumschreiber = false;
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -168,8 +155,7 @@ public class BluetoothLeService extends Service {
     }
 
     @SuppressLint("DefaultLocale")
-    private void broadcastUpdate(final String action,
-                                 final BluetoothGattCharacteristic characteristic) {
+    private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
         final byte[] data = characteristic.getValue();
         if (data != null && data.length > 0) {
@@ -341,8 +327,7 @@ public class BluetoothLeService extends Service {
      * @param characteristic Characteristic to act on.
      * @param enabled        If true, enable notification.  False otherwise.
      */
-    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
-                                              boolean enabled) {
+    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic, boolean enabled) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
@@ -360,12 +345,10 @@ public class BluetoothLeService extends Service {
             return;
         }
         boolean result = mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
-        Log.d(TAG, "set Notification of Characteristic " + characteristic.getUuid().toString() +
-                " success: " + String.format("%b", result));
+        Log.d(TAG, "set Notification of Characteristic " + characteristic.getUuid().toString() + " success: " + String.format("%b", result));
 
         // Update Descriptor of the Characteristic
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
         if (descriptor != null) {
             isBusy = true; // Changes during onDescriptorWrite-callback
 
@@ -377,8 +360,7 @@ public class BluetoothLeService extends Service {
             else if (indicate) descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
             else descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             result = mBluetoothGatt.writeDescriptor(descriptor);
-            Log.d(TAG, "writeDescriptor" +
-                    characteristic.getUuid().toString() + " Succes: " + String.format("%b", result));
+            Log.d(TAG, "writeDescriptor" + characteristic.getUuid().toString() + " Succes: " + String.format("%b", result));
         }
     }
 
@@ -423,12 +405,6 @@ public class BluetoothLeService extends Service {
         return mBluetoothGatt.getServices();
     }
 
-    public class LocalBinder extends Binder {
-        BluetoothLeService getService() {
-            return BluetoothLeService.this;
-        }
-    }
-
     public void setNewTraumschreiber(boolean newDevice) {
         Log.d(TAG, "Set newTraumschreiber called");
         newTraumschreiber = newDevice;
@@ -451,7 +427,13 @@ public class BluetoothLeService extends Service {
         Log.i(TAG, "Requesting Mtu of size" + mtu);
     }
 
-    public void requestDLE(int dle){
-        
+    public void requestDLE(int dle) {
+
+    }
+
+    public class LocalBinder extends Binder {
+        BluetoothLeService getService() {
+            return BluetoothLeService.this;
+        }
     }
 }

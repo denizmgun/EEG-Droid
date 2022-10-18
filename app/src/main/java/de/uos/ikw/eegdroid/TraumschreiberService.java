@@ -13,7 +13,7 @@ public class TraumschreiberService {
 
     // UUIDS
     public static final UUID serviceUUID = UUID.fromString("00000ee6-0000-1000-8000-00805f9b34fb");
-    public static final ArrayList<UUID> notifyingUUIDs = new ArrayList<>() {
+    public static final ArrayList<UUID> notifyingUUIDs = new ArrayList<UUID>() {
         {
             add(UUID.fromString("0000ee60-0000-1000-8000-00805f9b34fb"));
             add(UUID.fromString("0000ee61-0000-1000-8000-00805f9b34fb"));

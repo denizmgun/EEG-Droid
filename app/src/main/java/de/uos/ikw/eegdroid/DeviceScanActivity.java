@@ -36,6 +36,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -58,6 +59,9 @@ public class DeviceScanActivity extends ListActivity {
     private static final int REQUEST_BLUETOOTH_CONNECT = 1;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 6000;
+    private static final String[] BLE_PERMISSIONS = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private static final String[] ANDROID_12_BLE_PERMISSIONS = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT};
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -104,9 +108,7 @@ public class DeviceScanActivity extends ListActivity {
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt,
-                                         BluetoothGattCharacteristic
-                                                 characteristic, int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.i("onCharacteristicRead", characteristic.toString());
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -150,15 +152,18 @@ public class DeviceScanActivity extends ListActivity {
     private ScanSettings settings;
     private List<ScanFilter> filters;
 
+    public static void requestBlePermissions(Activity activity, int requestCode) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            ActivityCompat.requestPermissions(activity, ANDROID_12_BLE_PERMISSIONS, requestCode);
+        else ActivityCompat.requestPermissions(activity, BLE_PERMISSIONS, requestCode);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mHandler = new Handler();
 
-        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1001);
-
-        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
-
+        checkPermissions();
 
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
@@ -168,8 +173,7 @@ public class DeviceScanActivity extends ListActivity {
         }
         // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
         // BluetoothAdapter through BluetoothManager.
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
@@ -191,8 +195,7 @@ public class DeviceScanActivity extends ListActivity {
         } else {
             menu.findItem(R.id.stop_button).setVisible(true);
             menu.findItem(R.id.scan_button).setVisible(false);
-            menu.findItem(R.id.refresh_button).setActionView(
-                    R.layout.actionbar_indeterminate_progress);
+            menu.findItem(R.id.refresh_button).setActionView(R.layout.actionbar_indeterminate_progress);
         }
         return true;
     }
@@ -246,9 +249,7 @@ public class DeviceScanActivity extends ListActivity {
         } else {
             Log.d(TAG, "Thinks BluetoothAdapter is enabled!");
             mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
-            settings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .build();
+            settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
             filters = new ArrayList<>();
         }
 
@@ -284,105 +285,68 @@ public class DeviceScanActivity extends ListActivity {
             locationEnabled = lm.isLocationEnabled();
         } else {
             // This was deprecated in API 28
-            int mode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE,
-                    Settings.Secure.LOCATION_MODE_OFF);
+            int mode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF);
             locationEnabled = (mode != Settings.Secure.LOCATION_MODE_OFF);
         }
 
         if (!locationEnabled && !networkEnabled && !gpsEnabled) {
             // notify user
             Log.d(TAG, "Actually Got into the path where user is notified about location services.");
-            new AlertDialog.Builder(context)
-                    .setTitle("Location Services Disabled")
-                    .setMessage("Bluetooth Low Energy requires enabled location services. " +
-                            "(Battery saving mode is sufficient.)")
-                    .setPositiveButton("Enable Location Service", (paramDialogInterface, paramInt) -> context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
-                    .setNegativeButton("Cancel", null)
-                    .show();
+            new AlertDialog.Builder(context).setTitle("Location Services Disabled").setMessage("Bluetooth Low Energy requires enabled location services. " + "(Battery saving mode is sufficient.)").setPositiveButton("Enable Location Service", (paramDialogInterface, paramInt) -> context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("Cancel", null).show();
         }
 
 
     }
 
     private void checkPermissions() {
-        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
-                Manifest.permission.BLUETOOTH_SCAN)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
-                    Manifest.permission.BLUETOOTH_SCAN)) {
+        requestBlePermissions(this, 1001);
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this, Manifest.permission.BLUETOOTH_SCAN)) {
             } else {
-                ActivityCompat.requestPermissions(DeviceScanActivity.this,
-                        new String[]{Manifest.permission.BLUETOOTH_SCAN},
-                        REQUEST_BLUETOOTH_SCAN);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    ActivityCompat.requestPermissions(DeviceScanActivity.this, new String[]{Manifest.permission.BLUETOOTH_SCAN}, REQUEST_BLUETOOTH_SCAN);
+                }
             }
         }
-        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
-                Manifest.permission.BLUETOOTH_CONNECT)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
-                    Manifest.permission.BLUETOOTH_CONNECT)) {
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this, Manifest.permission.BLUETOOTH_CONNECT)) {
             } else {
-                ActivityCompat.requestPermissions(DeviceScanActivity.this,
-                        new String[]{Manifest.permission.BLUETOOTH_CONNECT},
-                        REQUEST_BLUETOOTH_CONNECT);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    ActivityCompat.requestPermissions(DeviceScanActivity.this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQUEST_BLUETOOTH_CONNECT);
+                }
             }
         }
-        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             } else {
-                ActivityCompat.requestPermissions(DeviceScanActivity.this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_WRITE_EXTERNAL_STORAGE);
+                ActivityCompat.requestPermissions(DeviceScanActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
             }
         }
-        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
             } else {
-                ActivityCompat.requestPermissions(DeviceScanActivity.this,
-                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        REQUEST_ACCESS_COARSE_LOCATION);
+                ActivityCompat.requestPermissions(DeviceScanActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACCESS_COARSE_LOCATION);
             }
         }
-        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)) {
             } else {
-                ActivityCompat.requestPermissions(DeviceScanActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        REQUEST_ACCESS_FINE_LOCATION);
+                ActivityCompat.requestPermissions(DeviceScanActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
             }
         }
 
-        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (ContextCompat.checkSelfPermission(DeviceScanActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             } else {
-                ActivityCompat.requestPermissions(DeviceScanActivity.this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        REQUEST_READ_EXTERNAL_STORAGE);
+                ActivityCompat.requestPermissions(DeviceScanActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
             }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(DeviceScanActivity.this,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this,
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+            if (ContextCompat.checkSelfPermission(DeviceScanActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(DeviceScanActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                 } else {
-                    ActivityCompat.requestPermissions(DeviceScanActivity.this,
-                            new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
-                            REQUEST_ACCESS_BACKGROUND_LOCATION);
+                    ActivityCompat.requestPermissions(DeviceScanActivity.this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_ACCESS_BACKGROUND_LOCATION);
                 }
             }
         }
